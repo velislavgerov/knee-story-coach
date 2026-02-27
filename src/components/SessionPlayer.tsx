@@ -49,34 +49,39 @@ export default function SessionPlayer({
     : 'text-primary';
 
   const stateBg = isRest
-    ? 'from-rest/10 to-transparent'
+    ? 'from-rest/6 to-transparent'
     : isRelax
-    ? 'from-relax/10 to-transparent'
+    ? 'from-relax/6 to-transparent'
     : isHold
-    ? 'from-hold/10 to-transparent'
-    : 'from-primary/5 to-transparent';
+    ? 'from-hold/6 to-transparent'
+    : 'from-primary/4 to-transparent';
 
   return (
-    <div className={`min-h-screen flex flex-col bg-gradient-to-b ${stateBg} noise-overlay`}>
+    <div className={`min-h-screen flex flex-col bg-gradient-to-b ${stateBg} noise-overlay transition-all duration-700`}>
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between px-4 pt-4 pb-2">
+      <div className="relative z-10 flex items-center justify-between px-5 pt-5 pb-2">
         <div className="flex-1">
-          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{exercise.chapter}</p>
-          <h2 className="text-lg font-display font-semibold text-foreground truncate">{exercise.title}</h2>
+          <p className="text-xs font-light uppercase tracking-[0.2em] text-muted-foreground">{exercise.chapter}</p>
+          <h2 className="text-lg font-display font-medium text-foreground truncate">{exercise.title}</h2>
         </div>
         <SettingsDrawer settings={settings} onChange={onSettingsChange} disabled={status === 'running'} />
       </div>
 
+      {/* Narrative */}
+      <div className="relative z-10 px-5 pb-1">
+        <p className="text-sm text-muted-foreground/70 italic font-light">{exercise.narrative}</p>
+      </div>
+
       {/* Progress */}
-      <div className="relative z-10 px-4 pb-2">
+      <div className="relative z-10 px-5 pb-3 pt-2">
         <ProgressBar current={stepIndex} total={totalSteps} />
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-4 gap-4">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 py-4 gap-5">
         {/* Canvas */}
         {!isRest && !isRelax && (
-          <div className="animate-scale-in">
+          <div className="cinematic-zoom-in">
             <ExerciseCanvas
               exerciseId={exercise.id}
               isActive={status === 'running'}
@@ -86,83 +91,83 @@ export default function SessionPlayer({
         )}
 
         {/* State label */}
-        <div className={`text-center ${isRest || isRelax ? 'py-8' : ''}`}>
-          <span className={`text-sm font-semibold uppercase tracking-widest ${stateColor}`}>
-            {isRest ? '☕ Rest' : isRelax ? '💆 Relax' : isHold ? '💪 Hold' : isReps ? '🔢 Reps' : '🏋️ Work'}
+        <div className={`text-center ${isRest || isRelax ? 'py-10' : ''}`}>
+          <span className={`text-xs font-medium uppercase tracking-[0.2em] ${stateColor}`}>
+            {isRest ? 'Rest' : isRelax ? 'Release' : isHold ? 'Hold' : isReps ? 'Reps' : 'Work'}
           </span>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground/60 mt-1.5 font-light">
             Set {currentStep.setIndex + 1} of {currentStep.totalSets}
-            {isHold && currentStep.repIndex !== undefined && ` • Rep ${currentStep.repIndex + 1}`}
+            {isHold && currentStep.repIndex !== undefined && ` · Rep ${currentStep.repIndex + 1}`}
           </p>
         </div>
 
         {/* Timer or rep counter */}
         {isReps ? (
           <div className="text-center space-y-4">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-8">
               <button
                 onClick={onDecrementRep}
-                className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                className="w-12 h-12 rounded-full bg-secondary/70 flex items-center justify-center text-secondary-foreground transition-all duration-300 hover:bg-secondary"
                 aria-label="Decrement rep"
               >
-                <Minus className="w-5 h-5" />
+                <Minus className="w-4 h-4" />
               </button>
               <div>
-                <span className="text-6xl font-display font-bold text-foreground tabular-nums">
+                <span className="text-6xl font-display font-light text-foreground tabular-nums">
                   {repsCount}
                 </span>
-                <span className="text-2xl text-muted-foreground font-display">/{currentStep.targetReps}</span>
+                <span className="text-2xl text-muted-foreground/50 font-display font-light">/{currentStep.targetReps}</span>
               </div>
               <button
                 onClick={onCountRep}
-                className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-primary-foreground glow-primary hover:scale-105 transition-transform active:scale-95"
+                className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center text-primary-foreground glow-primary transition-all duration-300 hover:bg-primary active:scale-95"
                 aria-label="Count rep"
               >
-                <Plus className="w-6 h-6" />
+                <Plus className="w-5 h-5" />
               </button>
             </div>
-            <p className="text-sm text-muted-foreground">Tap + to count each rep</p>
+            <p className="text-xs text-muted-foreground/50 font-light">Tap + to count each rep</p>
           </div>
         ) : (
           <div className={`text-center ${isHold && status === 'running' ? 'pulse-hold' : ''}`}>
-            <span className={`text-7xl font-display font-bold tabular-nums ${stateColor}`}>
+            <span className={`text-7xl font-display font-light tabular-nums ${stateColor}`}>
               {formatTime(remaining)}
             </span>
           </div>
         )}
 
         {/* Instruction card */}
-        <div className="glass-panel p-4 w-full max-w-sm">
+        <div className="glass-panel p-5 w-full max-w-sm">
           {currentStep.note && (
-            <p className="text-accent text-sm font-medium mb-2">⚠️ {currentStep.note}</p>
+            <p className="text-accent text-sm font-light mb-2.5">⚠ {currentStep.note}</p>
           )}
           {!isRest && !isRelax && (
-            <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tips</p>
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">Guidance</p>
               <ul className="space-y-1">
                 {exercise.tips.map((tip, i) => (
-                  <li key={i} className="text-sm text-foreground/80 flex gap-2">
-                    <span className="text-primary">•</span> {tip}
+                  <li key={i} className="text-sm text-foreground/60 flex gap-2 font-light">
+                    <span className="text-primary/60">·</span> {tip}
                   </li>
                 ))}
               </ul>
             </div>
           )}
           {(isRest || isRelax) && (
-            <p className="text-sm text-foreground/70 text-center italic">
-              {isRest ? 'Breathe. Shake it out. Next set coming up.' : 'Let the muscle relax completely.'}
+            <p className="text-sm text-foreground/50 text-center italic font-light">
+              {isRest ? 'Breathe. Let go. The next chapter is coming.' : 'Let the muscle release completely.'}
             </p>
           )}
         </div>
       </div>
 
       {/* Controls */}
-      <div className="relative z-10 px-4 pb-8 pt-2">
+      <div className="relative z-10 px-5 pb-8 pt-3">
         <div className="flex items-center justify-center gap-4">
           <button
             onClick={onGoBack}
             disabled={stepIndex <= 0 || !isPaused}
-            className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground disabled:opacity-30 transition-all hover:bg-secondary/80"
+            className="w-12 h-12 rounded-full bg-secondary/60 flex items-center justify-center text-secondary-foreground disabled:opacity-20 transition-all duration-500 hover:bg-secondary"
             aria-label="Previous step"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -171,7 +176,7 @@ export default function SessionPlayer({
           {(isRest || isRelax) && (
             <button
               onClick={onSkipRest}
-              className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 transition-colors"
+              className="px-4 py-2 rounded-xl bg-secondary/60 text-secondary-foreground text-sm font-light transition-colors duration-500 hover:bg-secondary"
               aria-label="Skip rest"
             >
               <SkipForward className="w-4 h-4 inline mr-1" /> Skip
@@ -180,24 +185,24 @@ export default function SessionPlayer({
 
           <button
             onClick={isPaused ? onResume : onPause}
-            className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground glow-primary ripple-btn transition-transform hover:scale-105 active:scale-95"
-            aria-label={isPaused ? 'Resume' : 'Pause'}
+            className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center text-primary-foreground glow-primary transition-all duration-500 hover:bg-primary active:scale-95"
+            aria-label={isPaused ? 'Continue' : 'Pause'}
           >
-            {isPaused ? <Play className="w-7 h-7 ml-0.5" /> : <Pause className="w-7 h-7" />}
+            {isPaused ? <Play className="w-6 h-6 ml-0.5" /> : <Pause className="w-6 h-6" />}
           </button>
 
           <button
             onClick={onGoNext}
-            className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground hover:bg-secondary/80 transition-all"
-            aria-label="Next step"
+            className="w-12 h-12 rounded-full bg-secondary/60 flex items-center justify-center text-secondary-foreground transition-all duration-500 hover:bg-secondary"
+            aria-label="Next chapter"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-3">
-          <kbd className="px-1 py-0.5 rounded bg-secondary text-[10px]">Space</kbd> pause/resume &middot;
-          <kbd className="px-1 py-0.5 rounded bg-secondary text-[10px] ml-1">←→</kbd> prev/next
+        <p className="text-center text-xs text-muted-foreground/40 mt-4 font-light">
+          <kbd className="px-1 py-0.5 rounded bg-secondary/60 text-[10px]">Space</kbd> pause · continue &middot;
+          <kbd className="px-1 py-0.5 rounded bg-secondary/60 text-[10px] ml-1">←→</kbd> prev · next
         </p>
       </div>
     </div>

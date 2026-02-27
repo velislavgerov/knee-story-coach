@@ -1,6 +1,6 @@
 import { UserSettings } from '@/data/routine';
 import SettingsDrawer from './SettingsDrawer';
-import { Play } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 interface LandingScreenProps {
   settings: UserSettings;
@@ -13,28 +13,28 @@ interface LandingScreenProps {
 export default function LandingScreen({ settings, onSettingsChange, onStart, hasExistingSession, onResume }: LandingScreenProps) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 noise-overlay relative overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background pointer-events-none" />
+      {/* Dusk-to-dawn gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[hsl(240,30%,12%)] via-background to-[hsl(174,30%,8%)] pointer-events-none" />
 
-      <div className="relative z-10 max-w-md w-full text-center space-y-8 animate-fade-in">
+      <div className="relative z-10 max-w-md w-full text-center space-y-10 cinematic-enter">
         {/* Logo / Title */}
-        <div className="space-y-3">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center glow-primary">
+        <div className="space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-primary/80 to-primary/40 flex items-center justify-center glow-primary">
             <span className="text-2xl font-bold text-primary-foreground font-display">K</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold font-display tracking-tight text-foreground">
+          <h1 className="text-4xl md:text-5xl font-light font-display tracking-tight text-foreground leading-tight">
             Knee Rehab<br />
-            <span className="gradient-text">Coach</span>
+            <span className="gradient-text font-medium">Coach</span>
           </h1>
-          <p className="text-muted-foreground text-lg leading-relaxed max-w-xs mx-auto">
-            A guided, step-by-step rehabilitation routine for your {settings.knee} knee.
+          <p className="text-muted-foreground text-lg leading-relaxed max-w-xs mx-auto font-light">
+            A guided routine for your {settings.knee} knee. Calm, focused, at your pace.
           </p>
         </div>
 
         {/* Routine summary */}
-        <div className="glass-panel p-5 text-left space-y-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Today's Routine</h2>
-          <ul className="space-y-1.5 text-sm text-foreground/80">
+        <div className="glass-panel p-6 text-left space-y-3">
+          <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Today's routine</h2>
+          <ul className="space-y-2 text-sm text-foreground/70">
             <li className="flex justify-between"><span>1. Stationary Bike</span><span className="text-muted-foreground">5 × 1 min</span></li>
             <li className="flex justify-between"><span>2. Knee Extension</span><span className="text-muted-foreground">3 × 1 min</span></li>
             <li className="flex justify-between"><span>3. Straight Leg Raise</span><span className="text-muted-foreground">5 × 20 reps</span></li>
@@ -50,25 +50,25 @@ export default function LandingScreen({ settings, onSettingsChange, onStart, has
             <>
               <button
                 onClick={onResume}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-display font-semibold text-lg flex items-center justify-center gap-2 ripple-btn glow-primary transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                aria-label="Resume session"
+                className="w-full py-4 rounded-2xl bg-primary/90 text-primary-foreground font-display font-medium text-lg flex items-center justify-center gap-2 glow-primary transition-all duration-500 hover:bg-primary active:scale-[0.99]"
+                aria-label="Continue session"
               >
-                <Play className="w-5 h-5" /> Resume Session
+                Continue <ChevronRight className="w-5 h-5" />
               </button>
               <button
                 onClick={onStart}
-                className="w-full py-3 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm transition-colors hover:bg-secondary/80"
+                className="w-full py-3 rounded-xl bg-secondary text-secondary-foreground font-light text-sm transition-colors duration-500 hover:bg-secondary/80"
               >
-                Start New Session
+                Start fresh
               </button>
             </>
           ) : (
             <button
               onClick={onStart}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-display font-semibold text-lg flex items-center justify-center gap-2 ripple-btn glow-primary transition-transform hover:scale-[1.02] active:scale-[0.98]"
-              aria-label="Start session"
+              className="w-full py-4 rounded-2xl bg-primary/90 text-primary-foreground font-display font-medium text-lg flex items-center justify-center gap-2 glow-primary transition-all duration-500 hover:bg-primary active:scale-[0.99]"
+              aria-label="Begin session"
             >
-              <Play className="w-5 h-5" /> Start Session
+              Begin <ChevronRight className="w-5 h-5" />
             </button>
           )}
         </div>
@@ -78,8 +78,8 @@ export default function LandingScreen({ settings, onSettingsChange, onStart, has
           <SettingsDrawer settings={settings} onChange={onSettingsChange} />
         </div>
 
-        <p className="text-xs text-muted-foreground">
-          Press <kbd className="px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground text-[10px]">Enter</kbd> to start &middot; All data stays local
+        <p className="text-xs text-muted-foreground/60 font-light">
+          Press <kbd className="px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground text-[10px]">Enter</kbd> to begin · All data stays local
         </p>
       </div>
     </div>
