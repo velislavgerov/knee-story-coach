@@ -1,6 +1,16 @@
+import { Link } from 'react-router-dom';
+import { CheckCircle2, ChevronRight } from 'lucide-react';
 import { UserSettings } from '@/data/routine';
 import SettingsDrawer from './SettingsDrawer';
-import { ChevronRight } from 'lucide-react';
+
+interface TodayProgressSummary {
+  dayIndex: number;
+  completed: number;
+  completedRaw: number;
+  target: number;
+  isTargetMet: boolean;
+  extraSessions: number;
+}
 
 interface LandingScreenProps {
   settings: UserSettings;
@@ -8,22 +18,49 @@ interface LandingScreenProps {
   onStart: () => void;
   hasExistingSession: boolean;
   onResume: () => void;
+  todayProgress: TodayProgressSummary;
+  streak: number;
+  progressStartDate: string;
+  onSetProgramStartDate: (dateYmd: string) => void;
+  onResetProgress: () => void;
+  pwaInstallAvailable: boolean;
+  onInstallApp: () => void;
+  showIosInstallHint: boolean;
+  onDismissIosInstallHint: () => void;
+  wakeLockSupported: boolean;
 }
 
-export default function LandingScreen({ settings, onSettingsChange, onStart, hasExistingSession, onResume }: LandingScreenProps) {
+export default function LandingScreen({
+  settings,
+  onSettingsChange,
+  onStart,
+  hasExistingSession,
+  onResume,
+  todayProgress,
+  streak,
+  progressStartDate,
+  onSetProgramStartDate,
+  onResetProgress,
+  pwaInstallAvailable,
+  onInstallApp,
+  showIosInstallHint,
+  onDismissIosInstallHint,
+  wakeLockSupported,
+}: LandingScreenProps) {
+  const progressRatio = Math.min(1, todayProgress.target > 0 ? todayProgress.completed / todayProgress.target : 0);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 noise-overlay relative overflow-hidden">
-      {/* Dusk-to-dawn gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-[hsl(240,30%,12%)] via-background to-[hsl(174,30%,8%)] pointer-events-none" />
 
-      <div className="relative z-10 max-w-md w-full text-center space-y-10 cinematic-enter">
-        {/* Logo / Title */}
+      <div className="relative z-10 max-w-md w-full text-center space-y-8 cinematic-enter">
         <div className="space-y-4">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-primary/80 to-primary/40 flex items-center justify-center glow-primary">
             <span className="text-2xl font-bold text-primary-foreground font-display">K</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-light font-display tracking-tight text-foreground leading-tight">
-            Knee Rehab<br />
+            Knee Rehab
+            <br />
             <span className="gradient-text font-medium">Coach</span>
           </h1>
           <p className="text-muted-foreground text-lg leading-relaxed max-w-xs mx-auto font-light">
@@ -31,7 +68,38 @@ export default function LandingScreen({ settings, onSettingsChange, onStart, has
           </p>
         </div>
 
-        {/* Routine summary */}
+        <div className="glass-panel p-5 text-left space-y-3">
+          <div>
+            <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Today</h2>
+            <p className="text-sm text-muted-foreground/80 mt-1">Program day {todayProgress.dayIndex}</p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm text-foreground/80">
+              <span>
+                {todayProgress.completed}/{todayProgress.target}
+              </span>
+              <span>{todayProgress.dayIndex <= 2 ? 'One session today.' : 'Two sessions today.'}</span>
+            </div>
+            <div className="h-2 rounded-full bg-secondary/70 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-primary/70 to-primary transition-all duration-700"
+                style={{ width: `${progressRatio * 100}%` }}
+              />
+            </div>
+            {todayProgress.isTargetMet && (
+              <p className="text-sm text-primary flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4" />
+                Target met
+              </p>
+            )}
+            {todayProgress.extraSessions > 0 && (
+              <p className="text-xs text-muted-foreground/70">{todayProgress.extraSessions} extra session logged.</p>
+            )}
+            <p className="text-xs text-muted-foreground/60">Streak: {streak} day{streak === 1 ? '' : 's'}</p>
+          </div>
+        </div>
+
         <div className="glass-panel p-6 text-left space-y-3">
           <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Today's routine</h2>
           <ul className="space-y-2 text-sm text-foreground/70">
@@ -44,7 +112,6 @@ export default function LandingScreen({ settings, onSettingsChange, onStart, has
           </ul>
         </div>
 
-        {/* Actions */}
         <div className="space-y-3">
           {hasExistingSession ? (
             <>
@@ -73,9 +140,31 @@ export default function LandingScreen({ settings, onSettingsChange, onStart, has
           )}
         </div>
 
-        {/* Settings */}
-        <div className="flex justify-center">
-          <SettingsDrawer settings={settings} onChange={onSettingsChange} />
+        <div className="flex items-center justify-center gap-3">
+          <SettingsDrawer
+            settings={settings}
+            onChange={onSettingsChange}
+            progressStartDate={progressStartDate}
+            onSetProgramStartDate={onSetProgramStartDate}
+            onResetProgress={onResetProgress}
+            pwaInstallAvailable={pwaInstallAvailable}
+            onInstallApp={onInstallApp}
+            showIosInstallHint={showIosInstallHint}
+            onDismissIosInstallHint={onDismissIosInstallHint}
+            wakeLockSupported={wakeLockSupported}
+          />
+          <Link
+            to="/debug/animations"
+            className="inline-flex px-3 py-2 rounded-lg bg-secondary/60 text-secondary-foreground text-xs"
+          >
+            Debug animations
+          </Link>
+          <Link
+            to="/progress"
+            className="inline-flex px-3 py-2 rounded-lg bg-secondary/60 text-secondary-foreground text-xs"
+          >
+            Progress
+          </Link>
         </div>
 
         <p className="text-xs text-muted-foreground/60 font-light">

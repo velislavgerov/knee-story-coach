@@ -2,7 +2,18 @@ import { Step, exercises, UserSettings } from '@/data/routine';
 import ExerciseCanvas from './ExerciseCanvas';
 import ProgressBar from './ProgressBar';
 import SettingsDrawer from './SettingsDrawer';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Pause, Play, SkipForward, ChevronLeft, ChevronRight, Plus, Minus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface SessionPlayerProps {
   currentStep: Step;
@@ -12,6 +23,14 @@ interface SessionPlayerProps {
   repsCount: number;
   status: 'running' | 'paused';
   settings: UserSettings;
+  progressStartDate: string;
+  onSetProgramStartDate: (dateYmd: string) => void;
+  onResetProgress: () => void;
+  pwaInstallAvailable: boolean;
+  onInstallApp: () => void;
+  showIosInstallHint: boolean;
+  onDismissIosInstallHint: () => void;
+  wakeLockSupported: boolean;
   onSettingsChange: (s: UserSettings) => void;
   onPause: () => void;
   onResume: () => void;
@@ -20,6 +39,7 @@ interface SessionPlayerProps {
   onDecrementRep: () => void;
   onGoBack: () => void;
   onGoNext: () => void;
+  onPauseAndNavigate: (direction: 'back' | 'next') => void;
 }
 
 function formatTime(s: number): string {
@@ -29,9 +49,30 @@ function formatTime(s: number): string {
 }
 
 export default function SessionPlayer({
-  currentStep, stepIndex, totalSteps, remaining, repsCount, status,
-  settings, onSettingsChange,
-  onPause, onResume, onSkipRest, onCountRep, onDecrementRep, onGoBack, onGoNext,
+  currentStep,
+  stepIndex,
+  totalSteps,
+  remaining,
+  repsCount,
+  status,
+  settings,
+  progressStartDate,
+  onSetProgramStartDate,
+  onResetProgress,
+  pwaInstallAvailable,
+  onInstallApp,
+  showIosInstallHint,
+  onDismissIosInstallHint,
+  wakeLockSupported,
+  onSettingsChange,
+  onPause,
+  onResume,
+  onSkipRest,
+  onCountRep,
+  onDecrementRep,
+  onGoBack,
+  onGoNext,
+  onPauseAndNavigate,
 }: SessionPlayerProps) {
   const exercise = exercises[currentStep.exerciseIndex];
   const isRest = currentStep.type === 'rest';
@@ -39,14 +80,17 @@ export default function SessionPlayer({
   const isHold = currentStep.type === 'hold';
   const isReps = currentStep.type === 'reps';
   const isPaused = status === 'paused';
+  const [transitioning, setTransitioning] = useState(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [pendingDirection, setPendingDirection] = useState<'back' | 'next' | null>(null);
 
-  const stateColor = isRest
-    ? 'text-rest'
-    : isRelax
-    ? 'text-relax'
-    : isHold
-    ? 'text-hold'
-    : 'text-primary';
+  useEffect(() => {
+    setTransitioning(true);
+    const timer = window.setTimeout(() => setTransitioning(false), 550);
+    return () => window.clearTimeout(timer);
+  }, [stepIndex]);
+
+  const stateColor = isRest ? 'text-rest' : isRelax ? 'text-relax' : isHold ? 'text-hold' : 'text-primary';
 
   const stateBg = isRest
     ? 'from-rest/6 to-transparent'
@@ -56,41 +100,66 @@ export default function SessionPlayer({
     ? 'from-hold/6 to-transparent'
     : 'from-primary/4 to-transparent';
 
+  const attemptNavigate = (direction: 'back' | 'next') => {
+    if (direction === 'back' && stepIndex <= 0) return;
+
+    if (status === 'running') {
+      setPendingDirection(direction);
+      setShowLeaveDialog(true);
+      return;
+    }
+
+    if (direction === 'back') onGoBack();
+    if (direction === 'next') onGoNext();
+  };
+
+  const handlePauseAndGo = () => {
+    if (!pendingDirection) return;
+    onPauseAndNavigate(pendingDirection);
+    setShowLeaveDialog(false);
+    setPendingDirection(null);
+  };
+
   return (
     <div className={`min-h-screen flex flex-col bg-gradient-to-b ${stateBg} noise-overlay transition-all duration-700`}>
-      {/* Header */}
       <div className="relative z-10 flex items-center justify-between px-5 pt-5 pb-2">
         <div className="flex-1">
           <p className="text-xs font-light uppercase tracking-[0.2em] text-muted-foreground">{exercise.chapter}</p>
           <h2 className="text-lg font-display font-medium text-foreground truncate">{exercise.title}</h2>
         </div>
-        <SettingsDrawer settings={settings} onChange={onSettingsChange} disabled={status === 'running'} />
+        <SettingsDrawer
+          settings={settings}
+          onChange={onSettingsChange}
+          progressStartDate={progressStartDate}
+          onSetProgramStartDate={onSetProgramStartDate}
+          onResetProgress={onResetProgress}
+          pwaInstallAvailable={pwaInstallAvailable}
+          onInstallApp={onInstallApp}
+          showIosInstallHint={showIosInstallHint}
+          onDismissIosInstallHint={onDismissIosInstallHint}
+          wakeLockSupported={wakeLockSupported}
+        />
       </div>
 
-      {/* Narrative */}
       <div className="relative z-10 px-5 pb-1">
         <p className="text-sm text-muted-foreground/70 italic font-light">{exercise.narrative}</p>
       </div>
 
-      {/* Progress */}
       <div className="relative z-10 px-5 pb-3 pt-2">
         <ProgressBar current={stepIndex} total={totalSteps} />
       </div>
 
-      {/* Main content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 py-4 gap-5">
-        {/* Canvas */}
+      <div
+        className={`relative z-10 flex-1 flex flex-col items-center justify-center px-5 py-4 gap-5 transition-all duration-500 ${
+          transitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+        }`}
+      >
         {!isRest && !isRelax && (
           <div className="cinematic-zoom-in">
-            <ExerciseCanvas
-              exerciseId={exercise.id}
-              isActive={status === 'running'}
-              reducedMotion={settings.reducedMotion}
-            />
+            <ExerciseCanvas exerciseId={exercise.id} isActive={status === 'running'} reducedMotion={settings.reducedMotion} />
           </div>
         )}
 
-        {/* State label */}
         <div className={`text-center ${isRest || isRelax ? 'py-10' : ''}`}>
           <span className={`text-xs font-medium uppercase tracking-[0.2em] ${stateColor}`}>
             {isRest ? 'Rest' : isRelax ? 'Release' : isHold ? 'Hold' : isReps ? 'Reps' : 'Work'}
@@ -101,7 +170,6 @@ export default function SessionPlayer({
           </p>
         </div>
 
-        {/* Timer or rep counter */}
         {isReps ? (
           <div className="text-center space-y-4">
             <div className="flex items-center gap-8">
@@ -113,9 +181,7 @@ export default function SessionPlayer({
                 <Minus className="w-4 h-4" />
               </button>
               <div>
-                <span className="text-6xl font-display font-light text-foreground tabular-nums">
-                  {repsCount}
-                </span>
+                <span className="text-6xl font-display font-light text-foreground tabular-nums">{repsCount}</span>
                 <span className="text-2xl text-muted-foreground/50 font-display font-light">/{currentStep.targetReps}</span>
               </div>
               <button
@@ -130,17 +196,12 @@ export default function SessionPlayer({
           </div>
         ) : (
           <div className={`text-center ${isHold && status === 'running' ? 'pulse-hold' : ''}`}>
-            <span className={`text-7xl font-display font-light tabular-nums ${stateColor}`}>
-              {formatTime(remaining)}
-            </span>
+            <span className={`text-7xl font-display font-light tabular-nums ${stateColor}`}>{formatTime(remaining)}</span>
           </div>
         )}
 
-        {/* Instruction card */}
         <div className="glass-panel p-5 w-full max-w-sm">
-          {currentStep.note && (
-            <p className="text-accent text-sm font-light mb-2.5">⚠ {currentStep.note}</p>
-          )}
+          {currentStep.note && <p className="text-accent text-sm font-light mb-2.5">⚠ {currentStep.note}</p>}
           {!isRest && !isRelax && (
             <div className="space-y-1.5">
               <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">Guidance</p>
@@ -161,12 +222,11 @@ export default function SessionPlayer({
         </div>
       </div>
 
-      {/* Controls */}
       <div className="relative z-10 px-5 pb-8 pt-3">
         <div className="flex items-center justify-center gap-4">
           <button
-            onClick={onGoBack}
-            disabled={stepIndex <= 0 || !isPaused}
+            onClick={() => attemptNavigate('back')}
+            disabled={stepIndex <= 0}
             className="w-12 h-12 rounded-full bg-secondary/60 flex items-center justify-center text-secondary-foreground disabled:opacity-20 transition-all duration-500 hover:bg-secondary"
             aria-label="Previous step"
           >
@@ -192,7 +252,7 @@ export default function SessionPlayer({
           </button>
 
           <button
-            onClick={onGoNext}
+            onClick={() => attemptNavigate('next')}
             className="w-12 h-12 rounded-full bg-secondary/60 flex items-center justify-center text-secondary-foreground transition-all duration-500 hover:bg-secondary"
             aria-label="Next chapter"
           >
@@ -205,6 +265,28 @@ export default function SessionPlayer({
           <kbd className="px-1 py-0.5 rounded bg-secondary/60 text-[10px] ml-1">←→</kbd> prev · next
         </p>
       </div>
+
+      <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave this step?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The current step is active. We can pause first and then navigate.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setPendingDirection(null);
+                setShowLeaveDialog(false);
+              }}
+            >
+              Continue here
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handlePauseAndGo}>Pause &amp; go</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

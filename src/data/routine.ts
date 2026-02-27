@@ -38,7 +38,7 @@ export const exercises: ExerciseDefinition[] = [
     sets: 5,
     durationSeconds: 60,
     restSeconds: 25,
-    tips: ['Keep resistance low', 'Smooth pedal strokes', 'Sit upright, core engaged'],
+    tips: ['Lie on your back on the floor', 'Pedal both legs in smooth circles', 'Alternate bend and extension like pressing pedals'],
     muscleGroup: 'general',
   },
   {
@@ -50,7 +50,7 @@ export const exercises: ExerciseDefinition[] = [
     sets: 3,
     durationSeconds: 60,
     restSeconds: 20,
-    tips: ['Anchor band securely', 'Full extension, slow return', 'Don\'t lock the knee'],
+    tips: ['Sit up tall with the band attached to your foot', 'Pull the band handles toward your torso', 'Control both pull and release without jerking'],
     muscleGroup: 'quads',
   },
   {
@@ -62,7 +62,7 @@ export const exercises: ExerciseDefinition[] = [
     sets: 5,
     reps: 20,
     restSeconds: 20,
-    tips: ['Keep leg straight', 'Raise to 45°', 'Control the descent'],
+    tips: ['Lie on your back and keep pelvis stable', 'Lift one straight leg toward 90° to your torso', 'Lower slowly back down to the start'],
     muscleGroup: 'quads',
   },
   {
@@ -202,6 +202,7 @@ export interface UserSettings {
   soundOn: boolean;
   reducedMotion: boolean;
   knee: 'left' | 'right';
+  autoAdvanceReps: boolean;
 }
 
 export const defaultSettings: UserSettings = {
@@ -209,4 +210,5 @@ export const defaultSettings: UserSettings = {
   soundOn: false,
   reducedMotion: false,
   knee: 'right',
+  autoAdvanceReps: true,
 };
