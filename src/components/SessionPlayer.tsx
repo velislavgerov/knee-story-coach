@@ -83,12 +83,16 @@ export default function SessionPlayer({
   const [transitioning, setTransitioning] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingDirection, setPendingDirection] = useState<'back' | 'next' | null>(null);
+  const [prevStepIndex, setPrevStepIndex] = useState(stepIndex);
 
   useEffect(() => {
-    setTransitioning(true);
-    const timer = window.setTimeout(() => setTransitioning(false), 550);
-    return () => window.clearTimeout(timer);
-  }, [stepIndex]);
+    if (stepIndex !== prevStepIndex) {
+      setTransitioning(true);
+      setPrevStepIndex(stepIndex);
+      const timer = window.setTimeout(() => setTransitioning(false), 700);
+      return () => window.clearTimeout(timer);
+    }
+  }, [stepIndex, prevStepIndex]);
 
   const stateColor = isRest ? 'text-rest' : isRelax ? 'text-relax' : isHold ? 'text-hold' : 'text-primary';
 
@@ -150,8 +154,8 @@ export default function SessionPlayer({
       </div>
 
       <div
-        className={`relative z-10 flex-1 flex flex-col items-center justify-center px-5 py-4 gap-5 transition-all duration-500 ${
-          transitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+        className={`relative z-10 flex-1 flex flex-col items-center justify-center px-5 py-4 gap-5 transition-all duration-700 ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
+          transitioning ? 'opacity-0 scale-[1.015] blur-sm' : 'opacity-100 scale-100 blur-0'
         }`}
       >
         {!isRest && !isRelax && (
@@ -160,7 +164,7 @@ export default function SessionPlayer({
           </div>
         )}
 
-        <div className={`text-center ${isRest || isRelax ? 'py-10' : ''}`}>
+        <div className={`text-center ${isRest || isRelax ? 'py-10 gentle-float' : ''}`}>
           <span className={`text-xs font-medium uppercase tracking-[0.2em] ${stateColor}`}>
             {isRest ? 'Rest' : isRelax ? 'Release' : isHold ? 'Hold' : isReps ? 'Reps' : 'Work'}
           </span>

@@ -138,31 +138,79 @@
     transition: transform 0s, opacity 0s;
   }
 
-  /* Cinematic crossfade transition */
+  /* Cinematic crossfade — slow, elegant, filmic */
   .cinematic-enter {
-    animation: cinematic-fade-in 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: cinematic-fade-in 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
   }
 
   @keyframes cinematic-fade-in {
-    0% { opacity: 0; transform: scale(1.02); filter: blur(4px); }
-    100% { opacity: 1; transform: scale(1); filter: blur(0); }
+    0% { opacity: 0; transform: scale(1.025) translateY(-4px); filter: blur(6px); }
+    60% { filter: blur(1px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
   }
 
   .cinematic-zoom-in {
-    animation: cinematic-zoom 0.9s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: cinematic-zoom 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) both;
   }
 
   @keyframes cinematic-zoom {
-    0% { opacity: 0; transform: scale(0.98); }
-    100% { opacity: 1; transform: scale(1); }
+    0% { opacity: 0; transform: scale(0.96); filter: blur(3px); }
+    100% { opacity: 1; transform: scale(1); filter: blur(0); }
+  }
+
+  /* Staggered reveal children — use on parent, children get delay */
+  .stagger-children > * {
+    animation: stagger-reveal 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 100ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 200ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 300ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 400ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 500ms; }
+  .stagger-children > *:nth-child(7) { animation-delay: 600ms; }
+
+  @keyframes stagger-reveal {
+    0% { opacity: 0; transform: translateY(12px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Soft glow pulse for completion icon */
+  .glow-breathe {
+    animation: glow-breathe 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  }
+
+  @keyframes glow-breathe {
+    0%, 100% { box-shadow: 0 0 30px hsl(var(--primary) / 0.15), 0 0 60px hsl(var(--primary) / 0.05); }
+    50% { box-shadow: 0 0 50px hsl(var(--primary) / 0.3), 0 0 100px hsl(var(--primary) / 0.1); }
+  }
+
+  /* Crossfade transition helper */
+  .crossfade-out {
+    animation: crossfade-exit 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  }
+
+  @keyframes crossfade-exit {
+    0% { opacity: 1; transform: scale(1); filter: blur(0); }
+    100% { opacity: 0; transform: scale(1.015); filter: blur(4px); }
+  }
+
+  /* Gentle float for resting states */
+  .gentle-float {
+    animation: gentle-float 4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  }
+
+  @keyframes gentle-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pulse-hold {
+  .pulse-hold, .gentle-float, .glow-breathe {
     animation: none;
   }
-  .cinematic-enter, .cinematic-zoom-in {
+  .cinematic-enter, .cinematic-zoom-in, .stagger-children > *, .crossfade-out {
     animation: none;
     opacity: 1;
     transform: none;
