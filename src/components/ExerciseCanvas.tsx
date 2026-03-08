@@ -156,225 +156,341 @@ export default function ExerciseCanvas({ exerciseId, isActive, reducedMotion }: 
       ctx.clearRect(0, 0, w, h);
 
       switch (exerciseId) {
+        /* ── Bike: upright seated posture on stationary bike ── */
         case 'bike': {
-          const floorY = 236;
-          const crank = { x: 194, y: 176 };
-          const pedalRadius = 30;
-          const pedalAngle = freeze ? toRad(24) : (t * 2 * Math.PI) / 4.8;
+          const floorY = 240;
+          const seatX = 130;
+          const seatY = 168;
+          const crank = { x: 180, y: 210 };
+          const pedalRadius = 28;
+          const pedalAngle = freeze ? toRad(30) : (t * 2 * Math.PI) / 4.8;
           const pedalLead = polar(crank, pedalRadius, pedalAngle);
           const pedalTrail = polar(crank, pedalRadius, pedalAngle + Math.PI);
-          const hip = { x: 130, y: 214 };
-          const shoulder = { x: 92, y: 204 };
-          const neck = { x: 79, y: 199 };
-          const head = { x: 65, y: 194 };
-          const handTop = { x: 101, y: 220 };
-          const handLow = { x: 121, y: 222 };
-          const elbowTop = { x: 90, y: 214 };
-          const elbowLow = { x: 109, y: 216 };
-          const kneeLead = solveJoint(hip, pedalLead, 48, 46, -1);
-          const kneeTrail = solveJoint(hip, pedalTrail, 48, 46, 1);
 
-          line({ x: 36, y: floorY }, { x: 262, y: floorY }, equipmentColor, 1.4);
-          circle(crank, pedalRadius, 'rgba(107, 118, 143, 0.45)', 1.2);
+          const hip = { x: seatX, y: seatY };
+          const shoulder = { x: seatX - 4, y: seatY - 48 };
+          const neck = { x: seatX - 2, y: seatY - 56 };
+          const head = { x: seatX, y: seatY - 68 };
+
+          // Handlebars
+          const handlebarBase = { x: 178, y: 148 };
+          const handleLeft = { x: 172, y: 142 };
+          const handleRight = { x: 184, y: 142 };
+
+          const kneeLead = solveJoint(hip, pedalLead, 46, 44, 1);
+          const kneeTrail = solveJoint(hip, pedalTrail, 46, 44, 1);
+
+          // Bike frame
+          line({ x: 40, y: floorY }, { x: 260, y: floorY }, equipmentColor, 1.4);
+          // Seat post
+          line({ x: seatX, y: seatY }, { x: seatX + 4, y: floorY - 10 }, equipmentColor, 1.8);
+          // Seat
+          line({ x: seatX - 12, y: seatY }, { x: seatX + 12, y: seatY }, equipmentColor, 2.2);
+          // Down tube to crank
+          line({ x: seatX + 4, y: floorY - 10 }, crank, equipmentColor, 1.5);
+          // Head tube to handlebars
+          line(crank, { x: 185, y: floorY - 10 }, equipmentColor, 1.5);
+          line({ x: 185, y: floorY - 10 }, handlebarBase, equipmentColor, 1.5);
+          line(handleLeft, handleRight, equipmentColor, 2);
+          // Wheels (simplified)
+          circle({ x: 85, y: floorY - 14 }, 13, 'rgba(107,118,143,0.3)', 1.2);
+          circle({ x: 220, y: floorY - 14 }, 13, 'rgba(107,118,143,0.3)', 1.2);
+          // Crank circle
+          circle(crank, pedalRadius, 'rgba(107, 118, 143, 0.35)', 1.0);
           line(crank, pedalLead, equipmentColor, 1.3);
           line(crank, pedalTrail, equipmentColor, 1.3);
-          arrow({ x: crank.x + 34, y: crank.y + 2 }, { x: crank.x + 42, y: crank.y + 10 }, equipmentColor);
+
+          // Arms reach to handlebars
+          const elbowA = solveJoint(shoulder, handleLeft, 24, 22, 1);
+          const elbowB = solveJoint(shoulder, handleRight, 24, 22, 1);
 
           pose({
-            head,
-            neck,
-            shoulder,
-            hip,
-            elbowA: elbowTop,
-            handA: handTop,
-            elbowB: elbowLow,
-            handB: handLow,
-            kneeLead,
-            ankleLead: pedalLead,
-            kneeTrail,
-            ankleTrail: pedalTrail,
+            head, neck, shoulder, hip,
+            elbowA, handA: handleLeft,
+            elbowB, handB: handleRight,
+            kneeLead, ankleLead: pedalLead,
+            kneeTrail, ankleTrail: pedalTrail,
           });
+
+          // Quad glow on driving leg
+          glowSegment(hip, kneeLead, quadColor, 0.18);
           break;
         }
 
+        /* ── Extension: SEATED on bench, extending lower leg against band ── */
         case 'extension': {
-          const pull = freeze ? 0.8 : cycle;
-          const floorY = 238;
-          const hip = { x: 130, y: 214 };
-          const shoulder = { x: 111, y: 170 };
-          const neck = { x: 103, y: 158 };
-          const head = { x: 95, y: 145 };
-          const activeKnee = { x: 186, y: 218 };
-          const activeAnkle = { x: 234, y: 224 };
-          const supportKnee = { x: 157, y: 196 };
-          const supportAnkle = { x: 171, y: floorY };
+          const ext = freeze ? 0.75 : cycle;
+          const floorY = 242;
+          const benchTopY = 188;
 
-          line({ x: 44, y: floorY }, { x: 258, y: floorY }, equipmentColor, 1.4);
-
-          const handPullA = { x: 121, y: 184 };
-          const handPullB = { x: 130, y: 191 };
-          const handReleaseA = { x: 166, y: 196 };
-          const handReleaseB = { x: 173, y: 202 };
-          const handA = lerpPoint(handReleaseA, handPullA, pull);
-          const handB = lerpPoint(handReleaseB, handPullB, pull);
-          const elbowA = solveJoint(shoulder, handA, 27, 25, -1);
-          const elbowB = solveJoint(shoulder, handB, 28, 24, 1);
-
-          pose({
-            head,
-            neck,
-            shoulder,
-            hip,
-            elbowA,
-            handA,
-            elbowB,
-            handB,
-            kneeLead: activeKnee,
-            ankleLead: activeAnkle,
-            kneeTrail: supportKnee,
-            ankleTrail: supportAnkle,
-          });
-
-          line(activeAnkle, handA, adductorColor, 1.7);
-          line(activeAnkle, handB, adductorColor, 1.7);
-          line(activeAnkle, { x: activeAnkle.x + 9, y: activeAnkle.y + 4 }, adductorColor, 1.7);
-          glowSegment(shoulder, handA, quadColor, 0.1 + pull * 0.16);
-          glowSegment(shoulder, handB, quadColor, 0.1 + pull * 0.16);
-          break;
-        }
-
-        case 'slr': {
-          const floorY = 228;
-          const raise = freeze ? 78 : 10 + cycle * 80;
-          const raiseAngle = -toRad(raise);
-          const hip = { x: 130, y: 213 };
-          const shoulder = { x: 92, y: 203 };
-          const neck = { x: 79, y: 198 };
-          const head = { x: 65, y: 193 };
-          const activeKnee = polar(hip, 45, raiseAngle);
-          const activeAnkle = polar(hip, 92, raiseAngle);
-          const supportKnee = { x: 164, y: 188 };
-          const supportAnkle = { x: 186, y: floorY };
-
+          // Draw bench
+          ctx.fillStyle = 'rgba(66, 74, 87, 0.5)';
+          ctx.fillRect(60, benchTopY, 80, 10);
+          // Bench legs
+          line({ x: 68, y: benchTopY + 10 }, { x: 68, y: floorY }, equipmentColor, 1.5);
+          line({ x: 132, y: benchTopY + 10 }, { x: 132, y: floorY }, equipmentColor, 1.5);
           line({ x: 40, y: floorY }, { x: 260, y: floorY }, equipmentColor, 1.4);
 
+          // Person seated on bench edge
+          const hip = { x: 120, y: benchTopY - 4 };
+          const shoulder = { x: 108, y: benchTopY - 52 };
+          const neck = { x: 106, y: benchTopY - 60 };
+          const head = { x: 104, y: benchTopY - 72 };
+
+          // Thigh horizontal on bench, knee at edge
+          const knee = { x: 156, y: benchTopY - 2 };
+          // Lower leg swings: bent (hanging) → extended (horizontal)
+          const ankleDown: Point = { x: 160, y: floorY - 8 };
+          const ankleUp: Point = { x: 210, y: benchTopY - 4 };
+          const ankle = lerpPoint(ankleDown, ankleUp, ext);
+
+          // Non-active leg: foot on floor
+          const supportKnee = { x: 95, y: benchTopY + 20 };
+          const supportAnkle = { x: 90, y: floorY - 2 };
+
+          // Arms resting on bench edge / thigh
+          const elbowA = { x: 96, y: benchTopY - 22 };
+          const handA = { x: 110, y: benchTopY - 6 };
+          const elbowB = { x: 126, y: benchTopY - 22 };
+          const handB = { x: 136, y: benchTopY - 6 };
+
           pose({
-            head,
-            neck,
-            shoulder,
-            hip,
-            elbowA: { x: 88, y: 212 },
-            handA: { x: 104, y: 219 },
-            elbowB: { x: 108, y: 214 },
-            handB: { x: 127, y: 220 },
-            kneeLead: activeKnee,
-            ankleLead: activeAnkle,
-            kneeTrail: supportKnee,
-            ankleTrail: supportAnkle,
+            head, neck, shoulder, hip,
+            elbowA, handA,
+            elbowB, handB,
+            kneeLead: knee, ankleLead: ankle,
+            kneeTrail: supportKnee, ankleTrail: supportAnkle,
           });
 
-          glowSegment(hip, activeKnee, quadColor, 0.28);
+          // Resistance band: from ankle to anchor below bench
+          const bandAnchor = { x: 70, y: floorY - 6 };
+          line(ankle, bandAnchor, adductorColor, 1.6);
+          // Small band loop at ankle
+          circle(ankle, 4, adductorColor, 1.2);
+
+          // Quad glow
+          glowSegment(hip, knee, quadColor, 0.16 + ext * 0.2);
+          glowSegment(knee, ankle, quadColor, 0.1 + ext * 0.14);
           break;
         }
 
-        case 'stepups': {
-          const drive = freeze ? 0.54 : cycle;
-          const riseY = -18 * drive;
-          const floorY = 232;
-          const stepTopY = 198;
-          const hip = { x: 148 + drive * 3, y: 178 + riseY };
-          const shoulder = { x: 147 + drive * 4, y: 136 + riseY };
-          const neck = { x: 147 + drive * 4, y: 124 + riseY };
-          const head = { x: 147 + drive * 4, y: 111 + riseY };
-          const stanceAnkle = { x: 196, y: stepTopY };
-          const stanceKnee = { x: 181 + drive * 1.4, y: 167 + riseY };
-          const trailAnkle = { x: 130, y: floorY };
-          const trailKnee = { x: 142 + drive, y: 205 + riseY * 0.25 };
+        /* ── SLR: SUPINE (lying on back), raising straight leg ── */
+        case 'slr': {
+          const raise = freeze ? 55 : 5 + cycle * 60;
+          const raiseAngle = -toRad(raise);
+          const floorY = 208;
+          const matY = floorY - 4;
 
+          // Mat
+          ctx.fillStyle = 'rgba(66, 74, 87, 0.35)';
+          ctx.fillRect(30, matY, 240, 6);
+
+          // Person lying on back (horizontal), head to left
+          const hip = { x: 168, y: matY - 6 };
+          const shoulder = { x: 100, y: matY - 8 };
+          const neck = { x: 82, y: matY - 9 };
+          const head = { x: 64, y: matY - 10 };
+
+          // Support leg: knee slightly bent, foot flat
+          const supportKnee = { x: 198, y: matY - 26 };
+          const supportAnkle = { x: 210, y: matY - 2 };
+
+          // Active leg: straight, raising from hip
+          const thighLen = 46;
+          const shinLen = 44;
+          const activeKnee = polar(hip, thighLen, raiseAngle);
+          const activeAnkle = polar(hip, thighLen + shinLen, raiseAngle);
+
+          // Arms at sides
+          const elbowA = { x: 88, y: matY + 6 };
+          const handA = { x: 76, y: matY + 10 };
+          const elbowB = { x: 130, y: matY + 5 };
+          const handB = { x: 145, y: matY + 8 };
+
+          pose({
+            head, neck, shoulder, hip,
+            elbowA, handA,
+            elbowB, handB,
+            kneeLead: activeKnee, ankleLead: activeAnkle,
+            kneeTrail: supportKnee, ankleTrail: supportAnkle,
+          });
+
+          // Quad highlight on raising leg
+          glowSegment(hip, activeKnee, quadColor, 0.28);
+          glowSegment(activeKnee, activeAnkle, quadColor, 0.16);
+
+          // Motion arrow
+          const arrowStart = polar(hip, thighLen + shinLen + 8, raiseAngle - toRad(10));
+          const arrowEnd = polar(hip, thighLen + shinLen + 8, raiseAngle + toRad(10));
+          arrow(arrowEnd, arrowStart, equipmentColor);
+          break;
+        }
+
+        /* ── Step-ups: stepping onto platform ── */
+        case 'stepups': {
+          const drive = freeze ? 0.5 : cycle;
+          const riseY = -20 * drive;
+          const floorY = 238;
+          const stepTopY = 202;
+          const stepH = floorY - stepTopY;
+
+          // Platform / step
           line({ x: 38, y: floorY }, { x: 262, y: floorY }, equipmentColor, 1.4);
           ctx.fillStyle = 'rgba(66, 74, 87, 0.55)';
-          ctx.fillRect(174, stepTopY, 82, 14);
+          ctx.fillRect(155, stepTopY, 100, stepH);
+          ctx.strokeStyle = equipmentColor;
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(155, stepTopY, 100, stepH);
+
+          const hip = { x: 165 + drive * 6, y: 170 + riseY };
+          const shoulder = { x: 162 + drive * 5, y: 126 + riseY };
+          const neck = { x: 161 + drive * 5, y: 114 + riseY };
+          const head = { x: 160 + drive * 5, y: 101 + riseY };
+
+          // Stance leg on step
+          const stanceKnee = solveJoint(hip, { x: 192, y: stepTopY }, 46, 44, 1);
+          const stanceAnkle = { x: 192, y: stepTopY };
+
+          // Trail leg: lifts off ground as body rises
+          const trailAnkleY = lerp(floorY - 2, stepTopY + 6, Math.max(0, drive * 1.4 - 0.2));
+          const trailAnkle = { x: 140 + drive * 10, y: trailAnkleY };
+          const trailKnee = solveJoint(hip, trailAnkle, 46, 44, -1);
+
+          // Arms swing naturally
+          const elbowA = { x: 175 + drive * 4, y: 145 + riseY };
+          const handA = { x: 180 + drive * 3, y: 166 + riseY };
+          const elbowB = { x: 148 + drive * 3, y: 144 + riseY };
+          const handB = { x: 143 + drive * 2, y: 165 + riseY };
 
           pose({
-            head,
-            neck,
-            shoulder,
-            hip,
-            elbowA: { x: 162, y: 152 + riseY },
-            handA: { x: 167, y: 176 + riseY },
-            elbowB: { x: 132, y: 153 + riseY },
-            handB: { x: 128, y: 177 + riseY },
-            kneeLead: stanceKnee,
-            ankleLead: stanceAnkle,
-            kneeTrail: trailKnee,
-            ankleTrail: trailAnkle,
+            head, neck, shoulder, hip,
+            elbowA, handA,
+            elbowB, handB,
+            kneeLead: stanceKnee, ankleLead: stanceAnkle,
+            kneeTrail: trailKnee, ankleTrail: trailAnkle,
           });
 
-          glowSegment(hip, stanceKnee, quadColor, 0.22);
-          arrow({ x: 227, y: 186 }, { x: 227, y: 150 }, equipmentColor);
+          // Quad glow on stance (driving) leg
+          glowSegment(hip, stanceKnee, quadColor, 0.18 + drive * 0.14);
+          // Direction arrow
+          arrow({ x: 230, y: stepTopY + 10 }, { x: 230, y: stepTopY - 24 }, equipmentColor);
           break;
         }
 
+        /* ── Adductors: SIDE-LYING, lifting bottom leg ── */
         case 'adductors': {
-          const lift = freeze ? 0.62 : cycle;
-          const floorY = 230;
-          const hip = { x: 128, y: 196 };
-          const shoulder = { x: 98, y: 184 };
-          const neck = { x: 84, y: 179 };
-          const head = { x: 70, y: 174 };
-          const movingAngle = toRad(12 - lift * 30);
-          const movingKnee = polar(hip, 44, movingAngle);
-          const movingAnkle = polar(hip, 90, movingAngle);
-          const topKnee = { x: 172, y: 191 };
-          const topAnkle = { x: 154, y: floorY };
+          const lift = freeze ? 0.55 : cycle;
+          const floorY = 232;
+          const matY = floorY - 4;
 
-          line({ x: 38, y: floorY }, { x: 262, y: floorY }, equipmentColor, 1.4);
+          // Mat
+          ctx.fillStyle = 'rgba(66, 74, 87, 0.35)';
+          ctx.fillRect(30, matY, 240, 6);
+
+          // Person lying on their side, head to left, facing viewer
+          // Body is slightly elevated off mat (on their side)
+          const bodyY = matY - 16;
+          const hip = { x: 170, y: bodyY };
+          const shoulder = { x: 95, y: bodyY - 6 };
+          const neck = { x: 78, y: bodyY - 8 };
+          const head = { x: 58, y: bodyY - 10 };
+
+          // Bottom arm: propping head up
+          const elbowA = { x: 72, y: bodyY + 8 };
+          const handA = { x: 60, y: bodyY - 4 }; // under head
+          // Top arm: resting on hip or floor in front
+          const elbowB = { x: 130, y: bodyY - 14 };
+          const handB = { x: 150, y: bodyY + 2 };
+
+          // Top leg: bent, foot on floor in front for stability
+          const topKnee = { x: 186, y: bodyY - 22 };
+          const topAnkle = { x: 200, y: matY - 2 };
+
+          // Bottom leg (working): straight, lifts upward
+          const bottomLegAngle = toRad(5 - lift * 25); // lifts from ~5° to ~-20°
+          const bottomKnee = polar(hip, 44, bottomLegAngle);
+          const bottomAnkle = polar(hip, 88, bottomLegAngle);
 
           pose({
-            head,
-            neck,
-            shoulder,
-            hip,
-            elbowA: { x: 84, y: 195 },
-            handA: { x: 97, y: 206 },
-            elbowB: { x: 116, y: 207 },
-            handB: { x: 138, y: 212 },
-            kneeLead: movingKnee,
-            ankleLead: movingAnkle,
-            kneeTrail: topKnee,
-            ankleTrail: topAnkle,
+            head, neck, shoulder, hip,
+            elbowA, handA,
+            elbowB, handB,
+            kneeLead: bottomKnee, ankleLead: bottomAnkle,
+            kneeTrail: topKnee, ankleTrail: topAnkle,
           });
 
-          glowSegment(hip, movingKnee, adductorColor, 0.32);
+          // Ankle weight indicator
+          circle(bottomAnkle, 5, adductorColor, 1.8);
+
+          // Adductor glow on inner thigh of bottom leg
+          glowSegment(hip, bottomKnee, adductorColor, 0.24 + lift * 0.16);
+          glowSegment(bottomKnee, bottomAnkle, adductorColor, 0.12 + lift * 0.1);
+
+          // Motion arrow
+          const arrowBase = polar(hip, 95, bottomLegAngle + toRad(8));
+          const arrowTip = polar(hip, 95, bottomLegAngle - toRad(8));
+          arrow(arrowBase, arrowTip, equipmentColor);
           break;
         }
 
+        /* ── Isometric: SEATED, leg extended, quad squeeze ── */
         case 'isometric': {
-          const floorY = 228;
-          const hip = { x: 128, y: 207 };
-          const activeKnee = { x: 172, y: 207 };
-          const activeAnkle = { x: 216, y: 207 };
-          const supportKnee = { x: 158, y: 214 };
-          const supportAnkle = { x: 190, y: 226 };
+          const floorY = 242;
+          const benchTopY = 192;
 
-          line({ x: 38, y: floorY }, { x: 262, y: floorY }, equipmentColor, 1.4);
+          // Bench / chair
+          ctx.fillStyle = 'rgba(66, 74, 87, 0.5)';
+          ctx.fillRect(55, benchTopY, 90, 10);
+          line({ x: 63, y: benchTopY + 10 }, { x: 63, y: floorY }, equipmentColor, 1.5);
+          line({ x: 137, y: benchTopY + 10 }, { x: 137, y: floorY }, equipmentColor, 1.5);
+          // Back rest
+          line({ x: 58, y: benchTopY }, { x: 55, y: benchTopY - 50 }, equipmentColor, 1.8);
+          line({ x: 40, y: floorY }, { x: 260, y: floorY }, equipmentColor, 1.4);
+
+          const hip = { x: 108, y: benchTopY - 4 };
+          const shoulder = { x: 78, y: benchTopY - 50 };
+          const neck = { x: 74, y: benchTopY - 58 };
+          const head = { x: 72, y: benchTopY - 70 };
+
+          // Active leg: fully extended straight out
+          const knee = { x: 162, y: benchTopY - 2 };
+          const ankle = { x: 218, y: benchTopY - 4 };
+
+          // Support leg: foot on floor
+          const supportKnee = { x: 92, y: benchTopY + 22 };
+          const supportAnkle = { x: 86, y: floorY - 2 };
+
+          // Arms on thigh / at sides
+          const elbowA = { x: 72, y: benchTopY - 22 };
+          const handA = { x: 90, y: benchTopY - 6 };
+          const elbowB = { x: 120, y: benchTopY - 20 };
+          const handB = { x: 132, y: benchTopY - 4 };
 
           pose({
-            head: { x: 68, y: 186 },
-            neck: { x: 80, y: 190 },
-            shoulder: { x: 94, y: 194 },
-            hip,
-            elbowA: { x: 109, y: 208 },
-            handA: { x: 128, y: 214 },
-            elbowB: { x: 121, y: 206 },
-            handB: { x: 141, y: 211 },
-            kneeLead: activeKnee,
-            ankleLead: activeAnkle,
-            kneeTrail: supportKnee,
-            ankleTrail: supportAnkle,
+            head, neck, shoulder, hip,
+            elbowA, handA,
+            elbowB, handB,
+            kneeLead: knee, ankleLead: ankle,
+            kneeTrail: supportKnee, ankleTrail: supportAnkle,
           });
 
-          glowSegment(hip, activeKnee, quadColor, 0.14 + pulse * 0.22);
+          // Pulsing quad glow for isometric hold
+          glowSegment(hip, knee, quadColor, 0.18 + pulse * 0.26);
+          glowSegment(knee, ankle, quadColor, 0.1 + pulse * 0.14);
+
+          // "Contract" indicator - tense lines around quad
+          const midThigh = lerpPoint(hip, knee, 0.5);
+          const glowR = 8 + pulse * 4;
+          ctx.save();
+          ctx.globalAlpha = 0.12 + pulse * 0.12;
+          ctx.strokeStyle = quadColor;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 4]);
+          ctx.beginPath();
+          ctx.arc(midThigh.x, midThigh.y, glowR, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.restore();
           break;
         }
       }
