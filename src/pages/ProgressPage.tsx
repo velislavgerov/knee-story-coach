@@ -8,7 +8,7 @@ import {
   loadProgress,
 } from '@/lib/progress';
 
-function statusClass(status: 'empty' | 'partial' | 'complete'): string {
+function statusClass(status: string): string {
   if (status === 'complete') return 'bg-primary/80 shadow-[0_0_18px_rgba(70,180,200,0.38)]';
   if (status === 'partial') return 'bg-primary/40';
   return 'bg-secondary/40';
