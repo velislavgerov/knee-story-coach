@@ -61,9 +61,9 @@ export default function CompletionScreen({
       <div className="absolute inset-0 bg-gradient-to-b from-[hsl(174,40%,8%)] via-background to-background pointer-events-none" />
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 max-w-md w-full text-center space-y-8 cinematic-enter">
+      <div className="relative z-10 max-w-md w-full text-center space-y-8 cinematic-enter stagger-children">
         <div className="space-y-4">
-          <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary/60 to-primary/20 flex items-center justify-center glow-primary">
+          <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary/60 to-primary/20 flex items-center justify-center glow-breathe">
             <span className="text-2xl">✦</span>
           </div>
           <h1 className="text-4xl font-light font-display text-foreground">Session complete</h1>

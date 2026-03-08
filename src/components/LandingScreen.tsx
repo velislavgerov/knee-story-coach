@@ -53,7 +53,7 @@ export default function LandingScreen({
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 noise-overlay relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-[hsl(240,30%,12%)] via-background to-[hsl(174,30%,8%)] pointer-events-none" />
 
-      <div className="relative z-10 max-w-md w-full text-center space-y-8 cinematic-enter">
+      <div className="relative z-10 max-w-md w-full text-center space-y-8 cinematic-enter stagger-children">
         <div className="space-y-4">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-primary/80 to-primary/40 flex items-center justify-center glow-primary">
             <span className="text-2xl font-bold text-primary-foreground font-display">K</span>
